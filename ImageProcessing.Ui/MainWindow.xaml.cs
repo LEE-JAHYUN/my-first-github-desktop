@@ -45,10 +45,10 @@ namespace ImageProcessing.Ui
                 return;
 
             // 기존 화면 초기화
-            ImageViewer1.Source = null;
-            NavigatorViewer.Source = null;
-            ImageViewer2.Source = null;
-            TemplatePreview.Source = null;
+            Viewer1.Source = null;
+            NavViewer.Source = null;
+            Viewer2.Source = null;
+            TemplateView.Source = null;
 
             // 기존 Result/Channel 제거
             processingService.ClearResult();
@@ -56,8 +56,8 @@ namespace ImageProcessing.Ui
 
             // 원본 열어서 Viewer1과 Navigator에 표시
             BitmapSource source = bmpFileHandler.Open(dialog.FileName);
-            ImageViewer1.Source = source;
-            NavigatorViewer.Source = source;
+            Viewer1.Source = source;
+            NavViewer.Source = source;
 
             ClearRoi();             // ROI 초기화 (MainWindow.Roi.cs)
             ApplySelectedChannel(); // 선택 채널 적용 + 히스토그램 갱신 (MainWindow.Histogram.cs)

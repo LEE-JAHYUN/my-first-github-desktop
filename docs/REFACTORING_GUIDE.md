@@ -104,7 +104,52 @@ ProcessingService ──→ ImageProcessor (C++/CLI, Scan0/Stride 전달)
 | 변경 없음 | `ImageProcessing.Core/BmpFileHandler.cs`, `ChannelMode.cs` |
 | 수정 | `Native/ImageProcessing.h` (include 모음으로 변경) |
 | **신규** | `Native/PixelHelper.h`, `PixelProcessor.h`, `MorphologyProcessor.h`, `FilterProcessor.h`, `TemplateMatchProcessor.h` |
-| 변경 없음 | `MainWindow.xaml` (컨트롤 이름, 이벤트 이름 모두 그대로) |
+| 수정 | `ImageProcessing.Ui/MainWindow.xaml` (x:Name 짧게 변경, 구역 주석 추가 — 아래 3-1 참고) |
+
+### 3-1. MainWindow.xaml x:Name 변경표
+
+규칙 : **종류 약자 + 대상**
+(`Txt` = TextBlock, `Rb` = RadioButton, `Sld` = Slider, `Cmb` = ComboBox, `Row` = RowDefinition, `Nav` = Navigator)
+
+| 기존 이름 | 새 이름 | 컨트롤 |
+|---|---|---|
+| ImageViewer1 / ImageViewer2 | `Viewer1` / `Viewer2` | Image |
+| RoiRectangle | `RoiRect` | Rectangle |
+| RoiCanvas | `RoiCanvas` (그대로) | Canvas |
+| NavigatorViewer | `NavViewer` | Image |
+| NavigatorCanvas | `NavCanvas` | Canvas |
+| NavigatorRoiRectangle | `NavRoiRect` | Rectangle |
+| HistRowR / G / B | `RowR` / `RowG` / `RowB` | RowDefinition |
+| TxtHistR / G / B | `TxtR` / `TxtG` / `TxtB` | TextBlock |
+| HistogramRBorder / G / B | `BorderR` / `BorderG` / `BorderB` | Border |
+| HistogramRCanvas / G / B | `CanvasR` / `CanvasG` / `CanvasB` | Canvas |
+| RbHistOriginal / RbHistResult | `RbOriginal` / `RbResult` | RadioButton |
+| TxtHistRoi | `TxtRoi` | TextBlock |
+| RbColor, RbR, RbG, RbB | (그대로) | RadioButton |
+| TxtProcessingTime | `TxtTime` | TextBlock |
+| TemplatePreview | `TemplateView` | Image |
+| SliderThreshold / TxtThresholdValue | `SldThreshold` / `TxtThreshold` | Slider / TextBlock |
+| SliderSigma / TxtSigmaValue | `SldSigma` / `TxtSigma` | Slider / TextBlock |
+| CmbKernelSize | `CmbKernel` | ComboBox |
+
+**이벤트 메서드 이름 변경** (XAML과 C# 모두 수정)
+
+| 기존 | 새 이름 | 이유 |
+|---|---|---|
+| `BtnLaplacian_Click_` | `BtnLaplacian_Click` | 끝의 `_` 는 오타 |
+| `SliderThreshold_ValueChanged` | `SldThreshold_ValueChanged` | "컨트롤이름_이벤트" 규칙에 맞춤 |
+| `SliderSigma_ValueChanged` | `SldSigma_ValueChanged` | 위와 같음 |
+
+**삭제한 것** (코드 어디에서도 쓰이지 않던 것)
+
+* `TxtTemplateMode` TextBlock : 항상 `Collapsed` 이고 코드에서 한 번도 보이게 하지 않음.
+  Color 모드가 아닐 때의 안내는 `CanRunTemplateMatching()` 의 MessageBox가 하고 있다.
+* `BtnDiff`, `BtnCorr`, `BtnCoeff` 의 x:Name : Click 이벤트만 쓰고 이름으로 접근하는 코드가 없음 (버튼은 그대로 있음).
+* 영상처리 탭의 `Cursor=""` : 값이 비어 있어 아무 효과가 없는 속성.
+
+> 주의 : `Style="{StaticResource ButtonSmall}"` 등 스타일은 App.xaml에 정의되어 있으므로 그대로 두었다.
+> Visual Studio에서 이름이 바뀐 뒤 빌드 오류가 나면 *빌드 → 솔루션 다시 빌드* 로
+> 자동 생성 파일(MainWindow.g.cs)을 새로 만들면 된다.
 
 ### Visual Studio에 적용하는 방법
 
@@ -313,9 +358,9 @@ ProcessingService ──→ ImageProcessor (C++/CLI, Scan0/Stride 전달)
  │   ├ LastProcessingTimeMs 저장
  │   └ ReplaceResult(result)          이전 결과 해제, ResultBitmap = result
  └ OnProcessingCompleted()
-     ├ ImageViewer2.Source = ToBitmapSource(ResultBitmap)
-     ├ TxtProcessingTime.Text = "xx ms"
-     ├ RbHistResult 활성화 + 선택
+     ├ Viewer2.Source = ToBitmapSource(ResultBitmap)
+     ├ TxtTime.Text = "xx ms"
+     ├ RbResult 활성화 + 선택
      └ UpdateHistogram()  → ResultBitmap(+ROI)로 히스토그램 계산 → DrawHistograms()
 ```
 
@@ -326,7 +371,7 @@ ProcessingService ──→ ImageProcessor (C++/CLI, Scan0/Stride 전달)
 
 BtnCoeff_Click
  ├ CanRunTemplateMatching()            Color 모드 / 이미지 / 템플릿 / 크기 검사
- ├ ImageViewer2.Source = null
+ ├ Viewer2.Source = null
  ├ processingService.TemplateMatchCoeff(원본, 템플릿)
  │   ├ image = CopyProcessingSource, template = CopyTo24bpp
  │   ├ LockBits 2번 → TemplateMatchProcessor.TemplateMatchCoeff(...) → double[3]
@@ -342,7 +387,7 @@ ChannelMode_Checked → CurrentChannelMode = R → ApplySelectedChannel
  ├ UpdateHistogramLayout()            R 줄만 보이게
  ├ 결과 초기화 (ClearResult, 처리시간 0 ms, 히스토그램 "원본" 선택)
  ├ processingService.ExtractChannel(원본) → PixelProcessor.ExtractChannel → ChannelBitmap
- ├ ImageViewer2 에 ChannelBitmap 표시
+ ├ Viewer2 에 ChannelBitmap 표시
  └ UpdateHistogram()                  ChannelBitmap 기준 히스토그램
 이후 처리 버튼을 누르면 GetWorkingBitmap 이 ChannelBitmap 을 돌려줘서 채널 영상이 처리된다.
 ```
@@ -411,7 +456,7 @@ width = 5 인 24bpp 이미지
 
 ---
 
-## 10. 처리 결과가 ImageViewer2와 Histogram에 표시되는 과정
+## 10. 처리 결과가 Viewer2와 Histogram에 표시되는 과정
 
 ```
 ProcessingService.ResultBitmap (System.Drawing.Bitmap)
@@ -419,10 +464,10 @@ ProcessingService.ResultBitmap (System.Drawing.Bitmap)
  ├─ OnProcessingCompleted
  │   ├ bmpFileHandler.ToBitmapSource(ResultBitmap)
  │   │   Bitmap → MemoryStream(BMP) → BitmapImage (WPF용) → Freeze
- │   └ ImageViewer2.Source = 위 결과
+ │   └ Viewer2.Source = 위 결과
  │
  └─ UpdateHistogram
-     ├ RbHistResult 선택됨 → baseBitmap = ResultBitmap
+     ├ RbResult 선택됨 → baseBitmap = ResultBitmap
      ├ ROI 있으면 baseBitmap.Clone(roi) 로 잘라내기
      ├ processingService.CalculateHistogram(target)
      │   → 24bpp 복사 → LockBits → PixelProcessor.CalculateHistogram → R/G/B 배열 채움

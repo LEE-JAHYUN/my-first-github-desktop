@@ -23,7 +23,7 @@ namespace ImageProcessing.Ui
             //    그 외 → 원본 영상
             System.Drawing.Bitmap baseBitmap = bmpFileHandler.OriginalBitmap;
 
-            if (RbHistResult.IsChecked == true && processingService.ResultBitmap != null)
+            if (RbResult.IsChecked == true && processingService.ResultBitmap != null)
                 baseBitmap = processingService.ResultBitmap;
             else if (processingService.CurrentChannelMode != ChannelMode.Color && processingService.ChannelBitmap != null)
                 baseBitmap = processingService.ChannelBitmap;
@@ -59,9 +59,9 @@ namespace ImageProcessing.Ui
 
             // 4. 상태 표시 후 그리기
             if (hasRoi == true)
-                TxtHistRoi.Text = "ROI 영역";
+                TxtRoi.Text = "ROI 영역";
             else
-                TxtHistRoi.Text = "전체 영역";
+                TxtRoi.Text = "전체 영역";
 
             DrawHistograms();
         }
@@ -69,15 +69,15 @@ namespace ImageProcessing.Ui
         // R, G, B 히스토그램을 각각 그린다. (보이는 줄만 그림)
         private void DrawHistograms()
         {
-            if (HistogramRCanvas == null || processingService.RHistogram == null)
+            if (CanvasR == null || processingService.RHistogram == null)
                 return;
 
-            if (HistogramRBorder.Visibility == Visibility.Visible)
-                DrawHistogramBoxes(HistogramRCanvas, processingService.RHistogram, Colors.Red);
-            if (HistogramGBorder.Visibility == Visibility.Visible)
-                DrawHistogramBoxes(HistogramGCanvas, processingService.GHistogram, Colors.LimeGreen);
-            if (HistogramBBorder.Visibility == Visibility.Visible)
-                DrawHistogramBoxes(HistogramBCanvas, processingService.BHistogram, Colors.DeepSkyBlue);
+            if (BorderR.Visibility == Visibility.Visible)
+                DrawHistogramBoxes(CanvasR, processingService.RHistogram, Colors.Red);
+            if (BorderG.Visibility == Visibility.Visible)
+                DrawHistogramBoxes(CanvasG, processingService.GHistogram, Colors.LimeGreen);
+            if (BorderB.Visibility == Visibility.Visible)
+                DrawHistogramBoxes(CanvasB, processingService.BHistogram, Colors.DeepSkyBlue);
         }
 
         // 밝기 0~255, 칸 하나마다 Rectangle 하나를 아래에서 위로 채움
@@ -124,13 +124,13 @@ namespace ImageProcessing.Ui
         // Color는 R/G/B를 모두 보여주고, R/G/B 모드는 해당 채널만 보여준다.
         private void UpdateHistogramLayout()
         {
-            if (HistRowR == null)
+            if (RowR == null)
                 return;
 
             ChannelMode mode = processingService.CurrentChannelMode;
-            SetHistogramRow(HistRowR, TxtHistR, HistogramRBorder, mode == ChannelMode.Color || mode == ChannelMode.R);
-            SetHistogramRow(HistRowG, TxtHistG, HistogramGBorder, mode == ChannelMode.Color || mode == ChannelMode.G);
-            SetHistogramRow(HistRowB, TxtHistB, HistogramBBorder, mode == ChannelMode.Color || mode == ChannelMode.B);
+            SetHistogramRow(RowR, TxtR, BorderR, mode == ChannelMode.Color || mode == ChannelMode.R);
+            SetHistogramRow(RowG, TxtG, BorderG, mode == ChannelMode.Color || mode == ChannelMode.G);
+            SetHistogramRow(RowB, TxtB, BorderB, mode == ChannelMode.Color || mode == ChannelMode.B);
         }
 
         // 히스토그램 한 줄 보이기/숨기기
@@ -188,21 +188,21 @@ namespace ImageProcessing.Ui
                 return;
 
             // 이전 처리 결과 초기화
-            ImageViewer2.Source = null;
+            Viewer2.Source = null;
             processingService.ClearResult();
-            TxtProcessingTime.Text = "0 ms";
-            RbHistResult.IsEnabled = false;
-            RbHistOriginal.IsChecked = true;
+            TxtTime.Text = "0 ms";
+            RbResult.IsEnabled = false;
+            RbOriginal.IsChecked = true;
 
             if (processingService.CurrentChannelMode == ChannelMode.Color)
             {
                 processingService.ClearChannel();
-                ImageViewer2.Source = null;
+                Viewer2.Source = null;
             }
             else
             {
                 processingService.ExtractChannel(bmpFileHandler.OriginalBitmap);
-                ImageViewer2.Source = bmpFileHandler.ToBitmapSource(processingService.ChannelBitmap);
+                Viewer2.Source = bmpFileHandler.ToBitmapSource(processingService.ChannelBitmap);
             }
 
             UpdateHistogram();

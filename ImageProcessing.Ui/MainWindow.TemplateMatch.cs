@@ -16,7 +16,7 @@ namespace ImageProcessing.Ui
             }
 
             bmpFileHandler.RegisterTemplate(bmpFileHandler.OriginalBitmap, currentRoi);             // 템플릿 이미지 저장
-            TemplatePreview.Source = bmpFileHandler.ToBitmapSource(bmpFileHandler.TemplateBitmap); // Preview 표시
+            TemplateView.Source = bmpFileHandler.ToBitmapSource(bmpFileHandler.TemplateBitmap); // Preview 표시
         }
 
         // 템플릿 매칭을 실행할 수 있는지 검사. 문제가 있으면 안내 메시지를 띄우고 false 반환.
@@ -56,7 +56,7 @@ namespace ImageProcessing.Ui
             if (CanRunTemplateMatching() == false)
                 return;
 
-            ImageViewer2.Source = null;
+            Viewer2.Source = null;
             processingService.TemplateMatchDiff(bmpFileHandler.OriginalBitmap, bmpFileHandler.TemplateBitmap);
             OnProcessingCompleted();
         }
@@ -67,7 +67,7 @@ namespace ImageProcessing.Ui
             if (CanRunTemplateMatching() == false)
                 return;
 
-            ImageViewer2.Source = null;
+            Viewer2.Source = null;
             processingService.TemplateMatchCorr(bmpFileHandler.OriginalBitmap, bmpFileHandler.TemplateBitmap);
             OnProcessingCompleted();
         }
@@ -78,7 +78,7 @@ namespace ImageProcessing.Ui
             if (CanRunTemplateMatching() == false)
                 return;
 
-            ImageViewer2.Source = null;
+            Viewer2.Source = null;
             processingService.TemplateMatchCoeff(bmpFileHandler.OriginalBitmap, bmpFileHandler.TemplateBitmap);
             OnProcessingCompleted();
         }

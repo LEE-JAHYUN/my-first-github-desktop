@@ -13,20 +13,20 @@ namespace ImageProcessing.Ui
         // 처리 완료 후 공통 화면 갱신
         private void OnProcessingCompleted()
         {
-            ImageViewer2.Source = bmpFileHandler.ToBitmapSource(processingService.ResultBitmap); // 결과를 뷰어2에 표시
-            TxtProcessingTime.Text = processingService.LastProcessingTimeMs + " ms";            // 처리 시간 표시
-            RbHistResult.IsEnabled = true;  // 처리결과 히스토그램 활성화
-            RbHistResult.IsChecked = true;  // 처리결과 히스토그램 자동 선택
+            Viewer2.Source = bmpFileHandler.ToBitmapSource(processingService.ResultBitmap); // 결과를 뷰어2에 표시
+            TxtTime.Text = processingService.LastProcessingTimeMs + " ms";            // 처리 시간 표시
+            RbResult.IsEnabled = true;  // 처리결과 히스토그램 활성화
+            RbResult.IsChecked = true;  // 처리결과 히스토그램 자동 선택
             UpdateHistogram();              // 히스토그램 갱신
         }
 
         // 이진화 슬라이더 값 표시
-        private void SliderThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void SldThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (TxtThresholdValue == null)
+            if (TxtThreshold == null)
                 return;
 
-            TxtThresholdValue.Text = "현재 값: " + (int)SliderThreshold.Value;
+            TxtThreshold.Text = "현재 값: " + (int)SldThreshold.Value;
         }
 
         // 이진화
@@ -35,7 +35,7 @@ namespace ImageProcessing.Ui
             if (CheckImageOpened() == false)
                 return;
 
-            int threshold = (int)SliderThreshold.Value; // 슬라이더 선택값
+            int threshold = (int)SldThreshold.Value; // 슬라이더 선택값
             processingService.Binarize(bmpFileHandler.OriginalBitmap, threshold);
             OnProcessingCompleted();
         }
@@ -71,12 +71,12 @@ namespace ImageProcessing.Ui
         }
 
         // 가우시안 시그마 슬라이더 값 표시
-        private void SliderSigma_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void SldSigma_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (TxtSigmaValue == null)
+            if (TxtSigma == null)
                 return;
 
-            TxtSigmaValue.Text = SliderSigma.Value.ToString("F1"); // 소수점 아래 한 자리까지 표시
+            TxtSigma.Text = SldSigma.Value.ToString("F1"); // 소수점 아래 한 자리까지 표시
         }
 
         // 가우시안
@@ -87,17 +87,17 @@ namespace ImageProcessing.Ui
 
             // 콤보박스 Index 0 → 3x3, Index 1 → 5x5
             int kernelSize = 3;
-            if (CmbKernelSize.SelectedIndex == 1)
+            if (CmbKernel.SelectedIndex == 1)
                 kernelSize = 5;
 
-            double sigma = SliderSigma.Value; // 슬라이더 선택값
+            double sigma = SldSigma.Value; // 슬라이더 선택값
 
             processingService.Gaussian(bmpFileHandler.OriginalBitmap, kernelSize, sigma);
             OnProcessingCompleted();
         }
 
-        // 라플라시안 (XAML에 연결된 이름 그대로 BtnLaplacian_Click_ 유지)
-        private void BtnLaplacian_Click_(object sender, RoutedEventArgs e)
+        // 라플라시안
+        private void BtnLaplacian_Click(object sender, RoutedEventArgs e)
         {
             if (CheckImageOpened() == false)
                 return;

@@ -19,11 +19,11 @@ namespace ImageProcessing.Ui
             isRoiDragging = true;                     // 드래그 시작
 
             // ROI Rectangle 초기화
-            Canvas.SetLeft(RoiRectangle, roiStartPoint.X);
-            Canvas.SetTop(RoiRectangle, roiStartPoint.Y);
-            RoiRectangle.Width = 0;
-            RoiRectangle.Height = 0;
-            RoiRectangle.Visibility = Visibility.Visible;
+            Canvas.SetLeft(RoiRect, roiStartPoint.X);
+            Canvas.SetTop(RoiRect, roiStartPoint.Y);
+            RoiRect.Width = 0;
+            RoiRect.Height = 0;
+            RoiRect.Visibility = Visibility.Visible;
             RoiCanvas.CaptureMouse(); // 마우스가 Canvas 밖으로 나가도 이벤트를 계속 받음
         }
 
@@ -43,10 +43,10 @@ namespace ImageProcessing.Ui
             double width = Math.Abs(current.X - roiStartPoint.X);
             double height = Math.Abs(current.Y - roiStartPoint.Y);
 
-            Canvas.SetLeft(RoiRectangle, x);
-            Canvas.SetTop(RoiRectangle, y);
-            RoiRectangle.Width = width;
-            RoiRectangle.Height = height;
+            Canvas.SetLeft(RoiRect, x);
+            Canvas.SetTop(RoiRect, y);
+            RoiRect.Width = width;
+            RoiRect.Height = height;
         }
 
         // ROI 클릭 후 뗌
@@ -94,7 +94,7 @@ namespace ImageProcessing.Ui
         private void ClearRoi()
         {
             hasRoi = false;
-            RoiRectangle.Visibility = Visibility.Collapsed; // 뷰어의 ROI 사각형 숨김
+            RoiRect.Visibility = Visibility.Collapsed; // 뷰어의 ROI 사각형 숨김
             UpdateNavigatorRoi();                           // 네비게이터의 ROI 사각형 숨김
         }
 
@@ -132,9 +132,9 @@ namespace ImageProcessing.Ui
         private void UpdateNavigatorRoi()
         {
             if (hasRoi == false || bmpFileHandler.OriginalBitmap == null ||
-                NavigatorCanvas.ActualWidth <= 0 || NavigatorCanvas.ActualHeight <= 0)
+                NavCanvas.ActualWidth <= 0 || NavCanvas.ActualHeight <= 0)
             {
-                NavigatorRoiRectangle.Visibility = Visibility.Collapsed;
+                NavRoiRect.Visibility = Visibility.Collapsed;
                 return;
             }
 
@@ -143,16 +143,16 @@ namespace ImageProcessing.Ui
             int imageHeight = bmpFileHandler.OriginalBitmap.Height;
 
             // 네비게이터의 확대/축소 비율과 여백 (CanvasPointToImagePixel과 같은 계산)
-            double scale = Math.Min(NavigatorCanvas.ActualWidth / imageWidth, NavigatorCanvas.ActualHeight / imageHeight);
-            double offsetX = (NavigatorCanvas.ActualWidth - imageWidth * scale) / 2;
-            double offsetY = (NavigatorCanvas.ActualHeight - imageHeight * scale) / 2;
+            double scale = Math.Min(NavCanvas.ActualWidth / imageWidth, NavCanvas.ActualHeight / imageHeight);
+            double offsetX = (NavCanvas.ActualWidth - imageWidth * scale) / 2;
+            double offsetY = (NavCanvas.ActualHeight - imageHeight * scale) / 2;
 
             // 이미지 픽셀 좌표 → 네비게이터 화면 좌표로 바꿔서 표시
-            Canvas.SetLeft(NavigatorRoiRectangle, offsetX + currentRoi.X * scale);
-            Canvas.SetTop(NavigatorRoiRectangle, offsetY + currentRoi.Y * scale);
-            NavigatorRoiRectangle.Width = Math.Max(1, currentRoi.Width * scale);
-            NavigatorRoiRectangle.Height = Math.Max(1, currentRoi.Height * scale);
-            NavigatorRoiRectangle.Visibility = Visibility.Visible;
+            Canvas.SetLeft(NavRoiRect, offsetX + currentRoi.X * scale);
+            Canvas.SetTop(NavRoiRect, offsetY + currentRoi.Y * scale);
+            NavRoiRect.Width = Math.Max(1, currentRoi.Width * scale);
+            NavRoiRect.Height = Math.Max(1, currentRoi.Height * scale);
+            NavRoiRect.Visibility = Visibility.Visible;
         }
     }
 }
