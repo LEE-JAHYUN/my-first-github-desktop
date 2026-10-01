@@ -25,7 +25,9 @@ namespace Native
             GenerateGaussianKernel1D(kernelSize, sigma, kernel);
             int radius = kernelSize / 2;
 
-            std::vector<double> tmp(width * height * 3); // 가로 패스 결과 (반올림X)
+            // 가로 패스 결과 (반올림X)
+            // src/dst와 똑같이 한 줄 = stride 칸으로 만들어 같은 공식 y * stride + x * 3 + c 를 쓴다.
+            std::vector<double> tmp(stride * height);
 
             // 1) 가로 패스: 1 x kernelSize
             for (int y = 0; y < height; y++)
@@ -40,7 +42,7 @@ namespace Native
                             int nx = PixelHelper::Clamp(x + kx, 0, width - 1); // 경계처리
                             sum += PixelHelper::GetChannelValue(src, stride, nx, y, c) * kernel[kx + radius]; // 컨벌루션
                         }
-                        tmp[(y * width + x) * 3 + c] = sum;
+                        tmp[y * stride + x * 3 + c] = sum;
                     }
                 }
             }
@@ -56,7 +58,7 @@ namespace Native
                         for (int ky = -radius; ky <= radius; ky++)
                         {
                             int ny = PixelHelper::Clamp(y + ky, 0, height - 1);
-                            sum += tmp[(ny * width + x) * 3 + c] * kernel[ky + radius];
+                            sum += tmp[ny * stride + x * 3 + c] * kernel[ky + radius];
                         }
                         dst[y * stride + x * 3 + c] = PixelHelper::ClampByte((int)(sum + 0.5)); // 여기서 한 번만 반올림
                     }

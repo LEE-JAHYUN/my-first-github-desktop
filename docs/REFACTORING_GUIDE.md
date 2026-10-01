@@ -30,7 +30,9 @@ ProcessingService ──→ ImageProcessor (C++/CLI, Scan0/Stride 전달)
 4. **사용하지 않는 using** : `System.Linq`, `System.Reflection`, `using static System.Net.Mime.MediaTypeNames` (마지막 것은 `Image` 이름 충돌 위험까지 있음)
 5. **버그 1개 (팽창/수축)** : 세로 패스에서 `tmp[ny * stride + x * 3 + c]` 로 읽었지만, tmp는 `(y * width + x) * 3 + c` 로 저장되어 있음.
    이미지 가로 크기가 4의 배수일 때는 `stride == width * 3` 이라 결과가 같지만,
-   그렇지 않으면 **다른 위치를 읽거나 배열 밖을 읽게 됨** → `(ny * width + x) * 3 + c` 로 수정.
+   그렇지 않으면 **다른 위치를 읽거나 배열 밖을 읽게 됨**.
+   → tmp를 `stride * height` 크기로 만들고 쓰기/읽기 모두 `y * stride + x * 3 + c` 로 통일해서 수정.
+   (가우시안의 tmp도 같은 방식으로 통일. 계산 결과는 이전과 동일)
    (가로가 4의 배수인 이미지는 결과가 기존과 100% 동일)
 
 ---
@@ -482,6 +484,22 @@ width = 5 인 24bpp 이미지
 그래서 (x, y) 픽셀의 위치는 반드시 `y * stride + x * 3` 로 계산해야 한다.
 `y * width * 3` 으로 계산하면 가로가 4의 배수가 아닌 이미지에서 줄이 어긋난다.
 (기존 팽창/수축 버그가 바로 이 stride와 width*3을 섞어 쓴 문제였다.)
+
+### 위치 공식은 하나로 통일
+
+이 프로그램은 픽셀 위치를 **항상 `y * stride + x * 3 + c` 하나로** 계산한다.
+팽창/수축/가우시안에서 중간 결과를 담는 임시 배열 `tmp` 도 `stride * height` 크기로 만들어
+원본(src)·결과(dst)와 **같은 모양**(줄 끝 여백 포함)을 갖게 했다.
+
+```cpp
+std::vector<unsigned char> tmp(stride * height);   // src와 같은 모양
+tmp[y * stride + x * 3 + c] = maxValue;            // 쓰기
+unsigned char value = tmp[ny * stride + x * 3 + c]; // 읽기
+```
+
+OpenCV 같은 일반적인 영상처리 라이브러리도 영상마다 시작 주소와 한 줄 크기(`step`)를 함께 가지고,
+위치는 항상 `y * step + x * 채널수 + c` 로 계산한다. "공식은 하나, 한 줄 크기는 영상마다" 가 기본 원칙이다.
+줄마다 최대 3칸 정도 메모리가 남지만, 공식이 하나라서 헷갈릴 일이 없다.
 
 ---
 

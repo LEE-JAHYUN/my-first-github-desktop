@@ -19,8 +19,10 @@ namespace Native
             unsigned char* src = (unsigned char*)srcScan0.ToPointer(); // 원본 이미지
             unsigned char* dst = (unsigned char*)dstScan0.ToPointer(); // 결과 이미지
 
-            // 가로 패스 결과 저장 (한 줄 = width * 3 바이트, 줄 끝 여백 없음)
-            std::vector<unsigned char> tmp(width * height * 3);
+            // 가로 패스 결과 저장
+            // src/dst와 똑같이 한 줄 = stride 칸으로 만든다. (줄 끝 여백 포함)
+            // 그래서 src, dst, tmp 모두 같은 공식 y * stride + x * 3 + c 로 위치를 계산한다.
+            std::vector<unsigned char> tmp(stride * height);
 
             // 1) 가로 패스: 1x3
             for (int y = 0; y < height; y++) // 행
@@ -39,7 +41,7 @@ namespace Native
                             if (value > maxValue)
                                 maxValue = value;
                         }
-                        tmp[(y * width + x) * 3 + c] = maxValue;
+                        tmp[y * stride + x * 3 + c] = maxValue;
                     }
                 }
             }
@@ -56,7 +58,7 @@ namespace Native
                         for (int dy = -1; dy <= 1; dy++)
                         {
                             int ny = PixelHelper::Clamp(y + dy, 0, height - 1);
-                            unsigned char value = tmp[(ny * width + x) * 3 + c];
+                            unsigned char value = tmp[ny * stride + x * 3 + c];
                             if (value > maxValue)
                                 maxValue = value;
                         }
@@ -72,7 +74,7 @@ namespace Native
             unsigned char* src = (unsigned char*)srcScan0.ToPointer();
             unsigned char* dst = (unsigned char*)dstScan0.ToPointer();
 
-            std::vector<unsigned char> tmp(width * height * 3); // 가로 패스 결과 저장
+            std::vector<unsigned char> tmp(stride * height); // 가로 패스 결과 저장 (src와 같은 모양)
 
             // 1) 가로 패스: 1x3
             for (int y = 0; y < height; y++) // 행
@@ -90,7 +92,7 @@ namespace Native
                             if (value < minValue)
                                 minValue = value;
                         }
-                        tmp[(y * width + x) * 3 + c] = minValue;
+                        tmp[y * stride + x * 3 + c] = minValue;
                     }
                 }
             }
@@ -107,7 +109,7 @@ namespace Native
                         for (int dy = -1; dy <= 1; dy++)
                         {
                             int ny = PixelHelper::Clamp(y + dy, 0, height - 1);
-                            unsigned char value = tmp[(ny * width + x) * 3 + c];
+                            unsigned char value = tmp[ny * stride + x * 3 + c];
                             if (value < minValue)
                                 minValue = value;
                         }
