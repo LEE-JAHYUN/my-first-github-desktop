@@ -2,11 +2,12 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Shapes;
 
 namespace ImageProcessing.Ui
 {
     // MainWindow (2/5) : ROI 및 Navigator
-    // 마우스 드래그로 ROI 선택, ROI 취소, Navigator에 ROI 사각형 표시
+    // 마우스 드래그로 ROI 선택, ROI 취소, Viewer1 / Viewer2 / Navigator에 ROI 사각형 표시
     public partial class MainWindow
     {
         // ROI 마우스 클릭 시작
@@ -77,7 +78,7 @@ namespace ImageProcessing.Ui
                 // ROI 지정 성공
                 currentRoi = new System.Drawing.Rectangle(x, y, width, height);
                 hasRoi = true;
-                UpdateNavigatorRoi(); // 네비게이터에 ROI 표시
+                UpdateRoiMarks(); // Viewer1, Viewer2, 네비게이터에 ROI 표시
             }
 
             UpdateHistogram(); // ROI(또는 전체) 히스토그램 출력
@@ -94,8 +95,7 @@ namespace ImageProcessing.Ui
         private void ClearRoi()
         {
             hasRoi = false;
-            RoiRect.Visibility = Visibility.Collapsed; // 뷰어의 ROI 사각형 숨김
-            UpdateNavigatorRoi();                           // 네비게이터의 ROI 사각형 숨김
+            UpdateRoiMarks(); // 모든 ROI 사각형 숨김
         }
 
         // 화면(Canvas) 좌표 → 실제 이미지 픽셀 좌표
@@ -128,31 +128,56 @@ namespace ImageProcessing.Ui
             return new Point(pixelX, pixelY);
         }
 
-        // Navigator 화면에 ROI 사각형 표시 (ROI가 없으면 숨김)
-        private void UpdateNavigatorRoi()
+        // 세 화면(Viewer1, Viewer2, Navigator)의 ROI 사각형을 현재 ROI에 맞게 다시 그린다.
+        // ROI는 이미지 픽셀 좌표로 저장되어 있으므로, 화면마다 크기에 맞게 바꿔서 그린다.
+        private void UpdateRoiMarks()
+        {
+            // Viewer1 : 드래그 중에는 마우스 위치대로 그리고 있으므로 건드리지 않는다
+            if (isRoiDragging == false)
+                ShowRoiOnCanvas(RoiCanvas, RoiRect);
+
+            // Navigator
+            ShowRoiOnCanvas(NavCanvas, NavRoiRect);
+
+            // Viewer2 : 표시 중인 영상이 있을 때만 그린다
+            if (Viewer2.Source != null)
+                ShowRoiOnCanvas(ResultCanvas, ResultRoiRect);
+            else
+                ResultRoiRect.Visibility = Visibility.Collapsed;
+        }
+
+        // Canvas 하나에 ROI 사각형 표시 (ROI가 없으면 숨김)
+        // Canvas는 영상(Image)과 같은 자리에 겹쳐 있고, 영상은 Stretch="Uniform"으로 가운데 정렬되어 있다.
+        private void ShowRoiOnCanvas(Canvas canvas, Rectangle rect)
         {
             if (hasRoi == false || bmpFileHandler.OriginalBitmap == null ||
-                NavCanvas.ActualWidth <= 0 || NavCanvas.ActualHeight <= 0)
+                canvas.ActualWidth <= 0 || canvas.ActualHeight <= 0)
             {
-                NavRoiRect.Visibility = Visibility.Collapsed;
+                rect.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            // 이미지 크기
+            // 이미지 크기 (처리 결과도 원본과 크기가 같다)
             int imageWidth = bmpFileHandler.OriginalBitmap.Width;
             int imageHeight = bmpFileHandler.OriginalBitmap.Height;
 
-            // 네비게이터의 확대/축소 비율과 여백 (CanvasPointToImagePixel과 같은 계산)
-            double scale = Math.Min(NavCanvas.ActualWidth / imageWidth, NavCanvas.ActualHeight / imageHeight);
-            double offsetX = (NavCanvas.ActualWidth - imageWidth * scale) / 2;
-            double offsetY = (NavCanvas.ActualHeight - imageHeight * scale) / 2;
+            // 확대/축소 비율과 여백 (CanvasPointToImagePixel과 같은 계산)
+            double scale = Math.Min(canvas.ActualWidth / imageWidth, canvas.ActualHeight / imageHeight);
+            double offsetX = (canvas.ActualWidth - imageWidth * scale) / 2;
+            double offsetY = (canvas.ActualHeight - imageHeight * scale) / 2;
 
-            // 이미지 픽셀 좌표 → 네비게이터 화면 좌표로 바꿔서 표시
-            Canvas.SetLeft(NavRoiRect, offsetX + currentRoi.X * scale);
-            Canvas.SetTop(NavRoiRect, offsetY + currentRoi.Y * scale);
-            NavRoiRect.Width = Math.Max(1, currentRoi.Width * scale);
-            NavRoiRect.Height = Math.Max(1, currentRoi.Height * scale);
-            NavRoiRect.Visibility = Visibility.Visible;
+            // 이미지 픽셀 좌표 → 화면 좌표로 바꿔서 표시
+            Canvas.SetLeft(rect, offsetX + currentRoi.X * scale);
+            Canvas.SetTop(rect, offsetY + currentRoi.Y * scale);
+            rect.Width = Math.Max(1, currentRoi.Width * scale);
+            rect.Height = Math.Max(1, currentRoi.Height * scale);
+            rect.Visibility = Visibility.Visible;
+        }
+
+        // 창 크기가 바뀌어 뷰어 크기가 달라지면 ROI 사각형 위치도 다시 계산
+        private void RoiMarkCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateRoiMarks();
         }
     }
 }

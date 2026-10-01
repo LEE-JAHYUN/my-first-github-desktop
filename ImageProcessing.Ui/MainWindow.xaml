@@ -41,7 +41,8 @@
                             <Canvas x:Name="RoiCanvas" Background="Transparent" Margin="4"
                                     MouseLeftButtonDown="RoiCanvas_MouseLeftButtonDown"
                                     MouseMove="RoiCanvas_MouseMove"
-                                    MouseLeftButtonUp="RoiCanvas_MouseLeftButtonUp">
+                                    MouseLeftButtonUp="RoiCanvas_MouseLeftButtonUp"
+                                    SizeChanged="RoiMarkCanvas_SizeChanged">
                                 <Rectangle x:Name="RoiRect" Stroke="Red" StrokeThickness="1"
                                            Visibility="Collapsed"/>
                             </Canvas>
@@ -54,7 +55,15 @@
                     <DockPanel>
                         <TextBlock Text="처리 결과 (Viewer2)" DockPanel.Dock="Top"
                                    Background="#EEEEEE" Padding="4"/>
-                        <Image x:Name="Viewer2" Stretch="Uniform" Margin="4"/>
+                        <Grid>
+                            <Image x:Name="Viewer2" Stretch="Uniform" Margin="4"/>
+                            <!-- ROI 표시 전용 (마우스 입력은 받지 않음) -->
+                            <Canvas x:Name="ResultCanvas" Margin="4" IsHitTestVisible="False"
+                                    SizeChanged="RoiMarkCanvas_SizeChanged">
+                                <Rectangle x:Name="ResultRoiRect" Stroke="Red" StrokeThickness="1"
+                                           Visibility="Collapsed"/>
+                            </Canvas>
+                        </Grid>
                     </DockPanel>
                 </Border>
             </Grid>
@@ -73,13 +82,16 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- 히스토그램 대상 선택 : 원본 / 처리 결과 -->
+                    <!-- 히스토그램 대상(원본 / 처리 결과) 과 범위(전체 / ROI) 표시 -->
                     <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="대상 :" Foreground="Gray" Margin="0,0,8,0"/>
                         <RadioButton x:Name="RbOriginal" Content="원본" GroupName="HistogramSource"
                                      IsChecked="True" Margin="0,0,12,0" Checked="HistogramSource_Checked"/>
                         <RadioButton x:Name="RbResult" Content="처리 결과" GroupName="HistogramSource"
                                      IsEnabled="False" Checked="HistogramSource_Checked"/>
-                        <TextBlock x:Name="TxtRoi" Text="전체 영역" Foreground="Black" Margin="12,0,0,0"/>
+                        <TextBlock Text="|" Foreground="LightGray" Margin="14,0,14,0"/>
+                        <TextBlock Text="범위 :" Foreground="Gray" Margin="0,0,8,0"/>
+                        <TextBlock x:Name="TxtRoi" Text="전체 영역" Foreground="Black"/>
                     </StackPanel>
 
                     <!-- R 줄 -->

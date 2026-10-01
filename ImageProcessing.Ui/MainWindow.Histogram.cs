@@ -205,6 +205,7 @@ namespace ImageProcessing.Ui
                 Viewer2.Source = bmpFileHandler.ToBitmapSource(processingService.ChannelBitmap);
             }
 
+            UpdateRoiMarks(); // 뷰어2 내용이 바뀌었으므로 ROI 사각형도 다시 표시
             UpdateHistogram();
         }
     }

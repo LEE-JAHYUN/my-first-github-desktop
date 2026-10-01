@@ -14,10 +14,11 @@ namespace ImageProcessing.Ui
         private void OnProcessingCompleted()
         {
             Viewer2.Source = bmpFileHandler.ToBitmapSource(processingService.ResultBitmap); // 결과를 뷰어2에 표시
-            TxtTime.Text = processingService.LastProcessingTimeMs + " ms";            // 처리 시간 표시
-            RbResult.IsEnabled = true;  // 처리결과 히스토그램 활성화
-            RbResult.IsChecked = true;  // 처리결과 히스토그램 자동 선택
-            UpdateHistogram();              // 히스토그램 갱신
+            TxtTime.Text = processingService.LastProcessingTimeMs + " ms"; // 처리 시간 표시
+            RbResult.IsEnabled = true; // 처리결과 히스토그램 활성화
+            RbResult.IsChecked = true; // 처리결과 히스토그램 자동 선택
+            UpdateRoiMarks();          // 뷰어2에도 ROI 사각형 표시 (MainWindow.Roi.cs)
+            UpdateHistogram();         // 히스토그램 갱신
         }
 
         // 이진화 슬라이더 값 표시

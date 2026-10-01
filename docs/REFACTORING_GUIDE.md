@@ -124,7 +124,8 @@ ProcessingService ──→ ImageProcessor (C++/CLI, Scan0/Stride 전달)
 | HistogramRBorder / G / B | `BorderR` / `BorderG` / `BorderB` | Border |
 | HistogramRCanvas / G / B | `CanvasR` / `CanvasG` / `CanvasB` | Canvas |
 | RbHistOriginal / RbHistResult | `RbOriginal` / `RbResult` | RadioButton |
-| TxtHistRoi | `TxtRoi` | TextBlock |
+| TxtHistRoi | `TxtRoi` | TextBlock (앞에 "범위 :" 라벨 추가) |
+| (신규) | `ResultCanvas` / `ResultRoiRect` | Viewer2 위에 겹친 ROI 표시용 Canvas / Rectangle |
 | RbColor, RbR, RbG, RbB | (그대로) | RadioButton |
 | TxtProcessingTime | `TxtTime` | TextBlock |
 | TemplatePreview | `TemplateView` | Image |
@@ -171,7 +172,7 @@ ProcessingService ──→ ImageProcessor (C++/CLI, Scan0/Stride 전달)
 |---|---|---|
 | 필드, 생성자, `Window_Loaded`, `BtnOpen_Click`, `BtnSave_Click` | MainWindow.xaml.cs | `Rectangle? currentRoi` → `bool hasRoi` + `Rectangle currentRoi` |
 | (신규) `CheckImageOpened` | MainWindow.xaml.cs | 7개 버튼에 반복되던 "먼저 BMP를 열어주세요" 검사를 한 곳으로 |
-| `RoiCanvas_MouseLeftButtonDown/Move/Up`, `CanvasPointToImagePixel`, `UpdateNavigatorRoi`, `BtnRoiCancel_Click` | MainWindow.Roi.cs | `UpdateNavigatorRoi(roi)` → 매개변수 없이 필드 사용 |
+| `RoiCanvas_MouseLeftButtonDown/Move/Up`, `CanvasPointToImagePixel`, `UpdateNavigatorRoi`, `BtnRoiCancel_Click` | MainWindow.Roi.cs | `UpdateNavigatorRoi(roi)` → `UpdateRoiMarks()` + `ShowRoiOnCanvas(canvas, rect)` (Viewer1/Viewer2/Navigator 공통) |
 | (신규) `ClearRoi` | MainWindow.Roi.cs | 열기/취소/빈 드래그에서 반복되던 ROI 초기화 3줄을 한 곳으로 |
 | `UpdateHistogram`, `DrawHistograms`, `DrawHistogramBoxes`, `UpdateHistogramLayout`, `SetHistogramRow`, `HistogramSource_Checked`, `HistogramCanvas_SizeChanged`, `ChannelMode_Checked`, `ApplySelectedChannel` | MainWindow.Histogram.cs | 삼항 연산자 → if/else |
 | `OnProcessingCompleted`, 슬라이더 2개, 이진화~소벨 버튼 7개 | MainWindow.Processing.cs | `CheckImageOpened()` 사용 |
@@ -264,7 +265,8 @@ ProcessingService ──→ ImageProcessor (C++/CLI, Scan0/Stride 전달)
 | `CheckImageOpened` | xaml.cs | 이미지가 없으면 메시지 후 false |
 | `RoiCanvas_Mouse...` | Roi.cs | 드래그로 ROI 사각형 그리기, 놓으면 이미지 좌표로 변환해 저장 |
 | `CanvasPointToImagePixel` | Roi.cs | 화면 좌표 → 이미지 픽셀 좌표 |
-| `UpdateNavigatorRoi` | Roi.cs | 이미지 좌표 → 네비게이터 좌표로 바꿔 빨간 사각형 표시 |
+| `UpdateRoiMarks` | Roi.cs | Viewer1, Viewer2, Navigator 세 곳의 ROI 사각형을 다시 그림 (ROI가 없으면 숨김) |
+| `ShowRoiOnCanvas` | Roi.cs | 이미지 픽셀 좌표 ROI → 해당 Canvas의 화면 좌표로 바꿔 사각형 표시 |
 | `UpdateHistogram` | Histogram.cs | 어떤 영상(원본/채널/결과)의 어떤 영역(ROI/전체)인지 정해서 계산 요청 후 그리기 |
 | `DrawHistogramBoxes` | Histogram.cs | 256개 막대를 Canvas에 그림 |
 | `ApplySelectedChannel` | Histogram.cs | 채널이 바뀌면 결과 초기화, R/G/B면 채널 영상을 만들어 Viewer2에 표시 |
@@ -391,6 +393,19 @@ ChannelMode_Checked → CurrentChannelMode = R → ApplySelectedChannel
  └ UpdateHistogram()                  ChannelBitmap 기준 히스토그램
 이후 처리 버튼을 누르면 GetWorkingBitmap 이 ChannelBitmap 을 돌려줘서 채널 영상이 처리된다.
 ```
+
+### ROI 사각형과 템플릿 매칭 사각형의 차이
+
+| | ROI 사각형 | 템플릿 매칭 사각형 |
+|---|---|---|
+| 정체 | 영상 위에 겹쳐 놓은 WPF `Rectangle` (픽셀이 아님) | 결과 영상 **픽셀에 직접** 그린 빨간 선 |
+| 표시 위치 | Viewer1, Viewer2, Navigator | Viewer2 |
+| 사라지는 때 | ROI 취소, 빈 드래그, 새 이미지 열기 | 다른 처리를 실행할 때 |
+| 다음 처리 입력에 섞이나? | 아니오 (픽셀이 아니므로) | 아니오 (`resultWithoutBox` 로 막음) |
+
+히스토그램 위의 "대상 : 원본 / 처리 결과" 는 **어떤 영상**을 셀지,
+"범위 : 전체 영역 / ROI 영역" 은 그 영상의 **어느 부분**을 셀지를 뜻한다.
+ROI가 있으면 Viewer2에도 같은 사각형이 그려지므로, 처리 결과의 어느 부분을 센 것인지 바로 보인다.
 
 ### "처리 결과를 이어서 다시 처리" 원리
 
