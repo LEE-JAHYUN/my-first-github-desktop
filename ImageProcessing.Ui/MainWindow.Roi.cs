@@ -139,11 +139,21 @@ namespace ImageProcessing.Ui
             // Navigator
             ShowRoiOnCanvas(NavCanvas, NavRoiRect);
 
-            // Viewer2 : 표시 중인 영상이 있을 때만 그린다
-            if (Viewer2.Source != null)
-                ShowRoiOnCanvas(ResultCanvas, ResultRoiRect);
-            else
+            // Viewer2 : 영상이 없거나, 템플릿 매칭 결과가 표시 중이면 숨긴다.
+            //   템플릿은 ROI를 잘라서 만들기 때문에 매칭 사각형과 ROI 사각형이 겹쳐 보여
+            //   "이전 매칭 사각형이 남은 것"처럼 헷갈리기 때문이다.
+            if (Viewer2.Source == null)
+            {
                 ResultRoiRect.Visibility = Visibility.Collapsed;
+            }
+            else if (processingService.IsTemplateMatchResult == true)
+            {
+                ResultRoiRect.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ShowRoiOnCanvas(ResultCanvas, ResultRoiRect);
+            }
         }
 
         // Canvas 하나에 ROI 사각형 표시 (ROI가 없으면 숨김)

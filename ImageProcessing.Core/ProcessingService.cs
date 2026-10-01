@@ -40,6 +40,19 @@ namespace ImageProcessing.Core
         // 직전 처리가 템플릿 매칭이 아니면 null.
         private Bitmap resultWithoutBox;
 
+        // 지금 결과(ResultBitmap)가 템플릿 매칭 결과인지 알려준다.
+        // 템플릿 매칭 직후에만 resultWithoutBox가 채워져 있으므로 이것으로 판단한다.
+        // (화면에서 Viewer2의 ROI 사각형을 숨길지 정할 때 사용)
+        public bool IsTemplateMatchResult
+        {
+            get
+            {
+                if (resultWithoutBox != null)
+                    return true;
+                return false;
+            }
+        }
+
         // 어떤 형식의 Bitmap이든 24bpp(픽셀 하나 = B, G, R 3바이트) 형식으로 복사한다.
         // C++ 코드는 항상 "픽셀 하나 = 3바이트"라고 가정하고 계산하기 때문에 필요하다.
         private Bitmap CopyTo24bpp(Bitmap source)

@@ -401,8 +401,7 @@ ChannelMode_Checked → CurrentChannelMode = R → ApplySelectedChannel
 | | ROI 사각형 | 템플릿 매칭 사각형 |
 |---|---|---|
 | 정체 | 영상 위에 겹쳐 놓은 WPF `Rectangle` (픽셀이 아님) | 결과 영상 **픽셀에 직접** 그린 빨간 선 |
-| 모양 | **노란 점선** | **빨간 실선** |
-| 표시 위치 | Viewer1, Viewer2, Navigator | Viewer2 |
+| 표시 위치 | Viewer1, Navigator, Viewer2 (단, 템플릿 매칭 결과일 때 Viewer2에서는 숨김) | Viewer2 |
 | 사라지는 때 | ROI 취소, 빈 드래그, 새 이미지 열기 | 다른 처리를 실행할 때 |
 | 다음 처리 입력에 섞이나? | 아니오 (픽셀이 아니므로) | 아니오 (`resultWithoutBox` 로 막음) |
 
@@ -410,9 +409,11 @@ ChannelMode_Checked → CurrentChannelMode = R → ApplySelectedChannel
 "범위 : 전체 영역 / ROI 영역" 은 그 영상의 **어느 부분**을 셀지를 뜻한다.
 ROI가 있으면 Viewer2에도 같은 사각형이 그려지므로, 처리 결과의 어느 부분을 센 것인지 바로 보인다.
 
-> 두 사각형의 모양을 다르게 한 이유 : 템플릿은 ROI를 잘라서 만들기 때문에, DIFF는 보통 ROI와 **같은 위치**를 찾는다.
-> 두 사각형이 같은 빨간색이면 DIFF → CORR 순서로 실행했을 때 Viewer2의 ROI 사각형이
-> "지워지지 않은 DIFF 사각형"처럼 보인다. 그래서 ROI는 노란 점선, 매칭 결과는 빨간 실선으로 구분했다.
+> Viewer2에서 템플릿 매칭 결과일 때 ROI를 숨기는 이유 : 템플릿은 ROI를 잘라서 만들기 때문에,
+> DIFF는 보통 ROI와 **같은 위치**를 찾는다. ROI 사각형을 그대로 그리면 DIFF → CORR 순서로 실행했을 때
+> ROI 사각형이 "지워지지 않은 DIFF 사각형"처럼 보인다.
+> 그래서 `ProcessingService.IsTemplateMatchResult` 가 true이면 `UpdateRoiMarks()` 가 Viewer2의 ROI만 숨긴다.
+> (Viewer1, Navigator의 ROI는 템플릿 등록에 필요하므로 계속 표시)
 
 ### "처리 결과를 이어서 다시 처리" 원리
 
