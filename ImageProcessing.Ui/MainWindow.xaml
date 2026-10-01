@@ -147,7 +147,10 @@
                     </Border>
                     <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
                         <TextBlock Text="처리 시간" Foreground="Gray" FontSize="11"/>
-                        <TextBlock x:Name="TxtTime" Text="0 ms" FontSize="16" FontWeight="Bold"/>
+                        <!-- Viewbox : 글자가 칸보다 길면 잘리지 않고 칸에 맞게 작아진다 (DownOnly = 커지지는 않음) -->
+                        <Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left">
+                            <TextBlock x:Name="TxtTime" Text="0 ms" FontSize="16" FontWeight="Bold"/>
+                        </Viewbox>
                     </StackPanel>
                 </Grid>
             </GroupBox>
