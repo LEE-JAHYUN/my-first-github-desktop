@@ -7,6 +7,10 @@
 
     <!--
         x:Name 규칙 : 종류 약자 + 대상
+
+        사각형 표시 규칙
+          ROI            = 노란 점선 (화면 위에 겹친 Rectangle, Viewer1 / Viewer2 / Navigator)
+          템플릿 매칭 결과 = 빨간 실선 (결과 영상 픽셀에 직접 그림, Viewer2)
           Txt = TextBlock,  Rb = RadioButton,  Sld = Slider,  Cmb = ComboBox
           Row = RowDefinition,  Border / Canvas = 그대로
           Viewer = 영상을 보여주는 Image,  Nav = Navigator
@@ -43,7 +47,7 @@
                                     MouseMove="RoiCanvas_MouseMove"
                                     MouseLeftButtonUp="RoiCanvas_MouseLeftButtonUp"
                                     SizeChanged="RoiMarkCanvas_SizeChanged">
-                                <Rectangle x:Name="RoiRect" Stroke="Red" StrokeThickness="1"
+                                <Rectangle x:Name="RoiRect" Stroke="Yellow" StrokeThickness="1.5" StrokeDashArray="4 2"
                                            Visibility="Collapsed"/>
                             </Canvas>
                         </Grid>
@@ -60,7 +64,7 @@
                             <!-- ROI 표시 전용 (마우스 입력은 받지 않음) -->
                             <Canvas x:Name="ResultCanvas" Margin="4" IsHitTestVisible="False"
                                     SizeChanged="RoiMarkCanvas_SizeChanged">
-                                <Rectangle x:Name="ResultRoiRect" Stroke="Red" StrokeThickness="1"
+                                <Rectangle x:Name="ResultRoiRect" Stroke="Yellow" StrokeThickness="1.5" StrokeDashArray="4 2"
                                            Visibility="Collapsed"/>
                             </Canvas>
                         </Grid>
@@ -152,7 +156,7 @@
                         <Grid>
                             <Image x:Name="NavViewer" Stretch="Uniform"/>
                             <Canvas x:Name="NavCanvas" ClipToBounds="True">
-                                <Rectangle x:Name="NavRoiRect" Stroke="Red" StrokeThickness="1"
+                                <Rectangle x:Name="NavRoiRect" Stroke="Yellow" StrokeThickness="1.5" StrokeDashArray="4 2"
                                            Visibility="Collapsed"/>
                             </Canvas>
                         </Grid>
