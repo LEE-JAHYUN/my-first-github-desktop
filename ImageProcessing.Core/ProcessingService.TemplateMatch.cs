@@ -101,7 +101,10 @@ namespace ImageProcessing.Core
             TemplateMatchHeight = templateBitmap.Height;
             LastProcessingTimeMs = elapsedMs;
 
-            // 찾은 위치에 빨간 사각형 그리기
+            // 사각형을 그리기 전에 깨끗한 영상을 복사해 둔다. (다음 처리의 입력으로 사용)
+            Bitmap cleanCopy = CopyTo24bpp(image);
+
+            // 찾은 위치에 빨간 사각형 그리기 (화면 표시용)
             using (Graphics g = Graphics.FromImage(image))
             {
                 using (Pen pen = new Pen(Color.Red, 2))
@@ -110,7 +113,8 @@ namespace ImageProcessing.Core
                 }
             }
 
-            ReplaceResult(image);
+            ReplaceResult(image);        // 사각형이 그려진 영상 → 화면 표시, 저장용
+            resultWithoutBox = cleanCopy; // ReplaceResult가 지운 뒤에 보관해야 한다
         }
     }
 }

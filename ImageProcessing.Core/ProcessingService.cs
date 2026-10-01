@@ -35,6 +35,11 @@ namespace ImageProcessing.Core
         public int TemplateMatchWidth { get; private set; }
         public int TemplateMatchHeight { get; private set; }
 
+        // 템플릿 매칭 결과(ResultBitmap)에는 빨간 사각형이 픽셀로 그려져 있다.
+        // 다음 처리에 사각형이 섞이지 않도록, 사각형을 그리기 "전" 영상을 따로 보관한다.
+        // 직전 처리가 템플릿 매칭이 아니면 null.
+        private Bitmap resultWithoutBox;
+
         // 어떤 형식의 Bitmap이든 24bpp(픽셀 하나 = B, G, R 3바이트) 형식으로 복사한다.
         // C++ 코드는 항상 "픽셀 하나 = 3바이트"라고 가정하고 계산하기 때문에 필요하다.
         private Bitmap CopyTo24bpp(Bitmap source)
@@ -96,6 +101,7 @@ namespace ImageProcessing.Core
         // 이번 처리의 입력 영상을 복사해서 돌려준다.
         // 직전 결과(ResultBitmap)가 있고 크기가 같으면 결과에 이어서 처리한다. (연속 처리 기능)
         // 새 이미지를 열어 크기가 달라지면 그 결과는 쓰지 않고 현재 영상에서 다시 시작한다.
+        // 직전 결과가 템플릿 매칭이면 빨간 사각형이 없는 영상(resultWithoutBox)에서 이어간다.
         private Bitmap CopyProcessingSource(Bitmap originalBitmap)
         {
             Bitmap working = GetWorkingBitmap(originalBitmap);
@@ -104,6 +110,9 @@ namespace ImageProcessing.Core
                 ResultBitmap.Width == working.Width &&
                 ResultBitmap.Height == working.Height)
             {
+                if (resultWithoutBox != null)
+                    return CopyTo24bpp(resultWithoutBox);
+
                 return CopyTo24bpp(ResultBitmap);
             }
 
@@ -118,15 +127,29 @@ namespace ImageProcessing.Core
                 ResultBitmap.Dispose();
                 ResultBitmap = null;
             }
+            ClearResultWithoutBox();
+        }
+
+        // 보관해 둔 "사각형 없는 영상" 지우기
+        private void ClearResultWithoutBox()
+        {
+            if (resultWithoutBox != null)
+            {
+                resultWithoutBox.Dispose();
+                resultWithoutBox = null;
+            }
         }
 
         // 연산이 끝난 비트맵을 현재 결과로 두고, 이전 결과는 이때 해제한다.
+        // 새 결과에는 빨간 사각형이 없으므로 보관해 둔 영상도 함께 지운다.
+        // (템플릿 매칭은 이 메서드를 부른 "뒤에" 다시 보관한다 → SaveMatchResult)
         private void ReplaceResult(Bitmap result)
         {
             if (ResultBitmap != null && ResultBitmap != result)
                 ResultBitmap.Dispose();
 
             ResultBitmap = result;
+            ClearResultWithoutBox();
         }
     }
 }

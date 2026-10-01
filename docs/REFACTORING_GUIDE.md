@@ -398,6 +398,20 @@ ChannelMode_Checked → CurrentChannelMode = R → ApplySelectedChannel
 그래서 가우시안 → 소벨 순서로 누르면 "가우시안 결과에 소벨"이 적용된다.
 새 파일을 열거나 채널을 바꾸면 `ClearResult()` 로 결과가 지워져서 처음부터 다시 시작한다.
 
+**템플릿 매칭 결과는 예외** : 매칭 결과(`ResultBitmap`)에는 빨간 사각형이 픽셀로 그려져 있다.
+이것을 그대로 다음 입력으로 쓰면 DIFF → CORR 순서로 눌렀을 때 사각형이 두 개 남고,
+이전 사각형의 빨간 픽셀이 CORR 점수 계산에도 섞여 버린다.
+그래서 `SaveMatchResult` 는 사각형을 그리기 **전** 영상을 `resultWithoutBox` 에 따로 보관하고,
+`CopyProcessingSource` 는 이 값이 있으면 사각형 없는 영상으로 이어서 처리한다.
+
+| 순서 | 다음 처리의 입력 | 화면(Viewer2) |
+|---|---|---|
+| DIFF | 원본 | 원본 + DIFF 사각형 |
+| → CORR | 원본 (사각형 없음) | 원본 + CORR 사각형 1개만 |
+| 가우시안 → DIFF → 소벨 | 가우시안 결과 (사각형 없음) | 가우시안 + 소벨 결과 |
+
+다른 처리가 실행되면 `ReplaceResult` 가 `resultWithoutBox` 를 지운다. (새 결과에는 사각형이 없으므로)
+
 ---
 
 ## 8. Bitmap이 C#에서 C++/CLI까지 전달되는 과정
